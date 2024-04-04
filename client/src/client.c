@@ -1,5 +1,5 @@
 #include "client.h"
-
+#include <readline/history.h>
 int main(void)
 {
 	/*---------------------------------------------------PARTE 2-------------------------------------------------------------*/
@@ -8,22 +8,27 @@ int main(void)
 	char* ip;
 	char* puerto;
 	char* valor;
+	char* linea;
 
 	t_log* logger;
 	t_config* config;
 
 	/* ---------------- LOGGING ---------------- */
 
-	logger = iniciar_logger();
-
+	logger = log_create("tp0-log", "log",1,log_level_from_string("INFO"));
 	// Usando el logger creado previamente
 	// Escribi: "Hola! Soy un log"
 
-
+	log_info(logger,"Hola! Soy un log");
+	
 	/* ---------------- ARCHIVOS DE CONFIGURACION ---------------- */
 
-	config = iniciar_config();
+	config = config_create("cliente.config");
 
+	valor = config_get_string_value(config,"CLAVE");
+	ip = config_get_string_value(config,"IP");
+	puerto = config_get_string_value(config,"PUERTO");
+	log_info(logger,valor);
 	// Usando el config creado previamente, leemos los valores del config y los 
 	// dejamos en las variables 'ip', 'puerto' y 'valor'
 
@@ -31,9 +36,25 @@ int main(void)
 
 
 	/* ---------------- LEER DE CONSOLA ---------------- */
-
+	
 	leer_consola(logger);
+	while (1){
+		linea = readline(">");
+		if(linea){
+			add_history(linea);
+			log_info(logger,linea);
+		}
 
+		if(!strncmp(linea, "", 1)){
+			free(linea);
+			break;
+		}
+		
+		printf("%s\n", linea);
+		free(linea);
+	}
+	
+	
 	/*---------------------------------------------------PARTE 3-------------------------------------------------------------*/
 
 	// ADVERTENCIA: Antes de continuar, tenemos que asegurarnos que el servidor esté corriendo para poder conectarnos a él
@@ -50,6 +71,8 @@ int main(void)
 
 	/*---------------------------------------------------PARTE 5-------------------------------------------------------------*/
 	// Proximamente
+	config_destroy(config);
+	log_destroy(logger);
 }
 
 t_log* iniciar_logger(void)
